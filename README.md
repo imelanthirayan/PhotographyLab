@@ -4,9 +4,17 @@
 
 ### Learn photography by changing camera settings—and seeing what happens.
 
+<a href="https://imelanthirayan.github.io/PhotographyLab/" target="_blank">
+  <img src="https://img.shields.io/badge/Live%20Demo-Photography%20Lab-0A7EA4?style=for-the-badge&logo=githubpages" alt="Live Demo" />
+</a>
+
 ![Interactive](https://img.shields.io/badge/INTERACTIVE-F4B740?style=for-the-badge&labelColor=17181c&color=F4B740)
 ![Visual](https://img.shields.io/badge/VISUAL-7DD3FC?style=for-the-badge&labelColor=17181c&color=38BDF8)
 ![Beginner Friendly](https://img.shields.io/badge/BEGINNER_FRIENDLY-86EFAC?style=for-the-badge&labelColor=17181c&color=22C55E)
+
+<br>
+
+Visit the published app: [Photography Lab](https://imelanthirayan.github.io/PhotographyLab/)
 
 <br>
 
