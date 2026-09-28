@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Photography Lab — Learn photography by experimenting</title>
+<meta name="description" content="An interactive virtual camera lab. Move a slider, see what happens to the photograph.">
+<link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+        colors: { ink: '#07080a', panel: '#101216', line: '#23262d', accent: '#f4b740' }
+      }
+    }
+  };
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-ink text-zinc-100 antialiased">
+
+<a href="#main" class="skip-link">Skip to content</a>
+
+<!-- Directional blur filters used for motion simulation -->
+<svg class="svg-defs" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="motion-x" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur id="motion-x-blur" stdDeviation="0 0" edgeMode="duplicate"/>
+    </filter>
+    <filter id="motion-y" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur id="motion-y-blur" stdDeviation="0 0" edgeMode="duplicate"/>
+    </filter>
+  </defs>
+</svg>
+
+<header class="sticky top-0 z-40 border-b border-line/80 bg-ink/85 backdrop-blur-xl">
+  <div class="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3 sm:px-6">
+    <a href="#/" class="brand shrink-0" data-route-link>
+      <svg class="brand-camera" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M4 7.5h3.2l1.4-2h6.8l1.4 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z"/>
+        <circle cx="12" cy="13.5" r="4"/>
+        <circle cx="18.5" cy="10" r=".8" class="brand-camera-light"/>
+      </svg>
+      <span class="text-[13px] font-semibold tracking-[0.22em] uppercase">Photography&nbsp;Lab</span>
+    </a>
+    <nav id="nav" aria-label="Labs" class="nav-scroll ml-auto flex items-center gap-1 overflow-x-auto"></nav>
+  </div>
+</header>
+
+<main id="main" class="mx-auto w-full max-w-7xl px-4 pb-24 sm:px-6"></main>
+
+<footer class="border-t border-line/70 py-8 text-center text-[11px] tracking-[0.2em] uppercase text-zinc-600">
+  <a
+    href="https://imelanthirayan.github.io/"
+    target="_blank"
+    rel="noopener noreferrer"
+    class="transition-colors hover:text-accent"
+  >Developed by Elanthirayan Madhavan</a>
+</footer>
+
+<script src="js/ui.js"></script>
+<script src="js/camera.js"></script>
+<script src="js/scenes.js"></script>
+<script src="js/aperture.js"></script>
+<script src="js/shutter.js"></script>
+<script src="js/iso.js"></script>
+<script src="js/whitebalance.js"></script>
+<script src="js/exposure.js"></script>
+<script src="js/focus.js"></script>
+<script src="js/triangle.js"></script>
+<script src="js/cameraModel.js"></script>
+<script src="js/focalScene.js"></script>
+<script src="js/focalLength.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

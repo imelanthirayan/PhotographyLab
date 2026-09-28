@@ -1,0 +1,446 @@
+/* Photography Lab — custom styles.
+   Tailwind handles layout/spacing; this file covers the camera-control look,
+   the layered photo stage, and things utilities can't express. */
+
+:root {
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --stage-radius: 18px;
+}
+
+html { scroll-behavior: smooth; }
+body { -webkit-tap-highlight-color: transparent; }
+
+.svg-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+.skip-link {
+  position: absolute; left: -999px; top: 0; z-index: 100;
+  background: #f4b740; color: #07080a; padding: 10px 16px; border-radius: 0 0 10px 0;
+  font-size: 13px; font-weight: 600;
+}
+.skip-link:focus { left: 0; }
+
+/* ---------- Focus visibility (accessibility) ---------- */
+:where(a, button, input, [tabindex]):focus-visible {
+  outline: 2px solid #f4b740;
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+/* ---------- Brand + navigation ---------- */
+.brand { display: flex; align-items: center; gap: 10px; color: #fafafa; }
+.brand-camera {
+  width: 21px; height: 21px;
+  fill: none; stroke: #f4b740; stroke-width: 1.7;
+  stroke-linecap: round; stroke-linejoin: round;
+  filter: drop-shadow(0 0 6px rgba(244, 183, 64, 0.32));
+}
+.brand-camera-light { fill: #f4b740; stroke: none; }
+.nav-scroll { scrollbar-width: none; -ms-overflow-style: none; scroll-snap-type: x proximity; }
+.nav-scroll::-webkit-scrollbar { display: none; }
+
+.nav-link {
+  flex: none; scroll-snap-align: end;
+  padding: 7px 12px; border-radius: 999px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+  color: #8b8f98; white-space: nowrap;
+  transition: color 0.22s var(--ease), background-color 0.22s var(--ease);
+}
+.nav-link:hover { color: #e8e9ec; background: rgba(255, 255, 255, 0.06); }
+.nav-link[aria-current="page"] {
+  color: #07080a; background: #f4b740;
+  box-shadow: 0 6px 20px -8px rgba(244, 183, 64, 0.9);
+}
+
+/* ---------- Section transition ---------- */
+.route-view { animation: view-in 0.42s var(--ease) both; }
+@keyframes view-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ---------- Photo stage ---------- */
+.stage {
+  position: relative; overflow: hidden;
+  border-radius: var(--stage-radius);
+  background: #05060a;
+  aspect-ratio: 16 / 10;
+  box-shadow: 0 40px 80px -40px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 255, 255, 0.07);
+  isolation: isolate;
+}
+@media (max-width: 640px) { .stage { aspect-ratio: 4 / 3; } }
+
+.stage-inner { position: absolute; inset: 0; }
+
+.layer {
+  position: absolute; inset: -2%;
+  background-size: cover; background-position: center;
+  transition: filter 0.45s var(--ease), transform 0.45s var(--ease), opacity 0.45s var(--ease);
+  will-change: filter;
+}
+/* Foreground layer is cut out of the same frame so the subject stays sharp
+   while everything around it can be blurred independently. */
+.layer-masked {
+  -webkit-mask-image: var(--fg-mask);
+  mask-image: var(--fg-mask);
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
+}
+
+.layer-slice {
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
+}
+
+.tint-layer {
+  position: absolute; inset: 0; pointer-events: none;
+  mix-blend-mode: soft-light; opacity: 0;
+  transition: background-color 0.5s var(--ease), opacity 0.5s var(--ease);
+}
+.wash-layer {
+  position: absolute; inset: 0; pointer-events: none;
+  transition: background-color 0.5s var(--ease), opacity 0.5s var(--ease);
+  opacity: 0;
+}
+.grain-layer {
+  position: absolute; inset: 0; pointer-events: none;
+  mix-blend-mode: overlay; opacity: 0;
+  background-repeat: repeat;
+  transition: opacity 0.3s var(--ease);
+}
+.vignette {
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(120% 95% at 50% 45%, transparent 52%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+.stage-badge {
+  position: absolute; top: 12px; left: 12px; z-index: 3;
+  padding: 5px 10px; border-radius: 999px;
+  background: rgba(8, 9, 12, 0.6); border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #cfd2d8;
+  transition: opacity 0.2s var(--ease);
+}
+
+/* Autofocus box */
+.af-box {
+  position: absolute; z-index: 4; width: 22%; aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border: 2px solid rgba(244, 183, 64, 0.95);
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45), 0 0 18px rgba(244, 183, 64, 0.45);
+  transition: left 0.5s var(--ease), top 0.5s var(--ease), width 0.35s var(--ease);
+  pointer-events: none;
+}
+.af-box::before {
+  content: ""; position: absolute; left: 50%; top: 50%;
+  width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%;
+  background: rgba(244, 183, 64, 0.95);
+}
+.af-box.locked { animation: af-lock 0.42s var(--ease); }
+@keyframes af-lock {
+  0% { transform: translate(-50%, -50%) scale(1.25); opacity: 0.5; }
+  60% { transform: translate(-50%, -50%) scale(0.95); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+/* A photograph that is itself the control (Focus lab).
+   The shared [tabindex]:focus-visible rule already draws the focus ring. */
+.stage-tappable { cursor: crosshair; touch-action: none; }
+/* Dragging should not select or long-press the image */
+.stage-tappable * { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+
+/* Motion ghosts for slow shutter speeds */
+.ghost { opacity: 0; transition: opacity 0.35s var(--ease), transform 0.35s var(--ease); }
+
+.subject-mover {
+  position: absolute;
+  animation: sweep var(--sweep, 3.2s) linear infinite;
+  will-change: transform;
+}
+.subject-mover.paused { animation-play-state: paused; }
+.subject-mover.no-motion { animation: none; }
+.subject-mover.photo-subject { inset: 0; }
+.subject-art {
+  position: absolute; inset: 0;
+  background-size: contain; background-repeat: no-repeat; background-position: center;
+  transition: filter 0.35s var(--ease);
+}
+@keyframes sweep {
+  from { transform: translateX(-14%); }
+  to { transform: translateX(126%); }
+}
+
+/* ---------- Value read-out ---------- */
+.value-big {
+  font-variant-numeric: tabular-nums;
+  font-weight: 200; letter-spacing: -0.03em; line-height: 0.95;
+  white-space: nowrap;
+  /* Scales down so long read-outs such as "ISO 12800" never wrap. */
+  font-size: clamp(2.4rem, 5.2vw, 4.5rem);
+}
+.value-big.value-sm { font-size: clamp(2rem, 3.4vw, 3rem); }
+.value-pulse { animation: value-pulse 0.34s var(--ease); }
+@keyframes value-pulse {
+  0% { opacity: 0.45; transform: translateY(5px); filter: blur(3px); }
+  100% { opacity: 1; transform: none; filter: none; }
+}
+
+/* ---------- Slider (shared component) ---------- */
+.slider-row { --pct: 50%; }
+.slider {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 34px; background: transparent; cursor: pointer; display: block;
+}
+.slider::-webkit-slider-runnable-track {
+  height: 6px; border-radius: 999px;
+  background:
+    linear-gradient(90deg, #f4b740 0 var(--pct), rgba(255, 255, 255, 0.14) var(--pct) 100%);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+.slider::-moz-range-track {
+  height: 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+.slider::-moz-range-progress { height: 6px; border-radius: 999px; background: #f4b740; }
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 26px; height: 26px; margin-top: -10px; border-radius: 50%;
+  background: linear-gradient(160deg, #fbfbfc, #b9bcc4 48%, #6d7178);
+  border: 1px solid rgba(0, 0, 0, 0.55);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255, 255, 255, 0.9);
+  transition: transform 0.16s var(--ease), box-shadow 0.16s var(--ease);
+}
+.slider::-moz-range-thumb {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: linear-gradient(160deg, #fbfbfc, #b9bcc4 48%, #6d7178);
+  border: 1px solid rgba(0, 0, 0, 0.55);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255, 255, 255, 0.9);
+}
+.slider:hover::-webkit-slider-thumb { transform: scale(1.06); }
+.slider:active::-webkit-slider-thumb { transform: scale(0.96); }
+.slider:focus-visible { outline: none; }
+.slider:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px rgba(244, 183, 64, 0.45), 0 4px 12px rgba(0, 0, 0, 0.7);
+}
+.slider:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 4px rgba(244, 183, 64, 0.45); }
+
+.scale-label {
+  font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #6b7078;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Buttons & panels ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px 18px; border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.03));
+  color: #e9eaee; font-size: 11px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
+  transition: background 0.2s var(--ease), transform 0.12s var(--ease), color 0.2s var(--ease);
+}
+.btn:hover { background: rgba(255, 255, 255, 0.14); }
+.btn:active { transform: translateY(1px); }
+.btn-primary {
+  background: linear-gradient(180deg, #ffd27a, #f4b740);
+  color: #1a1204; border-color: transparent;
+  box-shadow: 0 14px 34px -14px rgba(244, 183, 64, 0.95);
+}
+.btn-primary:hover { background: linear-gradient(180deg, #ffdc95, #ffc65c); }
+
+.chip {
+  padding: 7px 12px; border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12); background: rgba(255, 255, 255, 0.04);
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: #9ca1aa;
+  transition: all 0.2s var(--ease);
+}
+.chip:hover { color: #fff; border-color: rgba(255, 255, 255, 0.3); }
+.chip[aria-pressed="true"] { background: #f4b740; color: #12100a; border-color: transparent; }
+
+.panel {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.015));
+  border-radius: 18px;
+  backdrop-filter: blur(12px);
+}
+
+.hint { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #6b7078; }
+
+/* ---------- Focal length simulator ---------- */
+.focal-layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 28px; align-items: start; padding-top: 8px; }
+.focal-settings { display: flex; flex-direction: column; gap: 22px; padding: 22px; border: 1px solid rgba(255,255,255,.08); border-radius: 18px; background: rgba(255,255,255,.025); }
+.focal-settings-head, .focal-view-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.focal-control-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: -18px; }
+.focal-control-separator { margin: 1px 0 -13px; padding-top: 17px; border-top: 1px solid rgba(255,255,255,.08); }
+.focal-setting-readout { display: flex; align-items: baseline; gap: 8px; }
+.focal-control-value { color: #f1f2f4; font-size: 19px; font-variant-numeric: tabular-nums; letter-spacing: -.03em; }
+.focal-lens-label { color: #f4b740; font-size: 10px; letter-spacing: .16em; }
+.focal-presets { display: flex; justify-content: space-between; gap: 3px; }
+.focal-preset { color: #858a93; font: inherit; font-size: 11px; padding: 4px 5px; border-radius: 5px; transition: color .2s var(--ease), background .2s var(--ease); }
+.focal-preset:hover, .focal-preset.is-active { color: #07080a; background: #f4b740; }
+.focal-feedback { display: flex; flex-direction: column; gap: 7px; color: #70757e; font-size: 9px; letter-spacing: .14em; }
+.focal-feedback b { color: #b6bbc4; font-weight: 500; }
+.focal-summary { color: #d8dbe0; font-size: 12px; font-variant-numeric: tabular-nums; letter-spacing: .06em; white-space: nowrap; }
+.focal-actions { display: flex; align-items: center; gap: 8px; }
+.focal-main { min-width: 0; }
+.focal-metrics { display: flex; flex-wrap: wrap; gap: 14px 26px; padding: 0 2px 12px; }
+.focal-metric { display: flex; flex-direction: column; gap: 5px; }
+.focal-metric-value { color: #e2e4e8; font-size: 19px; font-variant-numeric: tabular-nums; letter-spacing: -.03em; }
+.focal-photo-frame { position: relative; overflow: hidden; aspect-ratio: 16 / 10; border-radius: 18px; background: #111812; box-shadow: 0 30px 60px -34px #000, 0 0 0 1px rgba(255,255,255,.1); isolation: isolate; }
+.focal-scene-canvas { display: block; width: 100%; height: 100%; }
+.focal-view-head { padding: 0 2px 4px; }
+.focal-depth-panel { margin-top: 14px; padding: 11px 14px 8px; border: 1px solid rgba(255,255,255,.08); border-radius: 12px; background: rgba(255,255,255,.025); }
+.focal-depth-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.focal-depth-values { display: flex; gap: 11px; color: #979ca5; font-size: 9px; font-variant-numeric: tabular-nums; }
+.focal-depth-total { color: #f4b740; }
+.focal-depth-focal { color: #d8dbe0; }
+.focal-depth-svg { display: block; width: 100%; height: auto; margin-top: 2px; overflow: visible; }
+.focal-depth-axis { stroke: #454a53; stroke-width: 2; }
+.focal-depth-fov { fill: rgba(244,183,64,.07); stroke: rgba(244,183,64,.42); stroke-width: 1; stroke-dasharray: 4 4; transition: d .45s var(--ease); }
+.focal-depth-range { fill: rgba(244,183,64,.46); transition: x .45s var(--ease), width .45s var(--ease); }
+.focal-depth-focus { stroke: #f4b740; stroke-width: 2; }
+.focal-depth-camera { fill: #f4b740; stroke: #f4b740; transition: transform .45s var(--ease); }
+.focal-depth-camera circle { fill: #101216; stroke: none; }
+.focal-depth-subject { fill: #d6d9de; stroke: #d6d9de; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; transition: transform .45s var(--ease); }
+.focal-depth-subject path { fill: none; }
+.focal-depth-background { fill: #526846; stroke: #526846; stroke-width: 4; stroke-linecap: round; transition: transform .45s var(--ease); }
+.focal-depth-label { fill: #6b7078; font: 5.5px Inter, sans-serif; letter-spacing: .8px; }
+@media (max-width: 520px) {
+  .focal-depth-head { align-items: flex-start; flex-direction: column; gap: 7px; }
+  .focal-depth-values { width: 100%; justify-content: space-between; gap: 6px; }
+}
+@media (max-width: 760px) {
+  .focal-layout { grid-template-columns: 1fr; gap: 18px; }
+  .focal-settings { order: 1; }
+  .focal-main { order: 0; }
+}
+
+/* Home concept tiles */
+.tile {
+  position: relative; overflow: hidden; border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.025);
+  transition: transform 0.3s var(--ease), border-color 0.3s var(--ease), background 0.3s var(--ease);
+}
+.tile:hover { transform: translateY(-3px); border-color: rgba(244, 183, 64, 0.5); background: rgba(244, 183, 64, 0.06); }
+.tile-art { aspect-ratio: 4 / 3; background-size: cover; background-position: center; }
+
+/* Exposure meter */
+.meter-needle { transition: left 0.4s var(--ease); }
+
+/* Triangle scene picker */
+.scene-strip {
+  display: flex; gap: 10px; margin-top: 14px;
+  overflow-x: auto; padding-bottom: 4px;
+  scrollbar-width: thin; scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+}
+.scene-pick {
+  flex: 0 0 auto; width: 96px; scroll-snap-align: start;
+  display: flex; flex-direction: column; gap: 6px;
+  border-radius: 12px; padding: 0; background: none;
+  transition: transform 0.25s var(--ease), opacity 0.25s var(--ease);
+  opacity: 0.55;
+}
+.scene-pick-art {
+  display: block; aspect-ratio: 16 / 10; border-radius: 10px;
+  background-size: cover; background-position: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: border-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+.scene-pick-label {
+  font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: #6b7078; text-align: center; transition: color 0.25s var(--ease);
+}
+.scene-pick:hover { opacity: 1; transform: translateY(-2px); }
+.scene-pick:hover .scene-pick-label { color: #b6bbc4; }
+.scene-pick[aria-pressed="true"] { opacity: 1; }
+.scene-pick[aria-pressed="true"] .scene-pick-art {
+  border-color: #f4b740; box-shadow: 0 0 0 2px rgba(244, 183, 64, 0.35);
+}
+.scene-pick[aria-pressed="true"] .scene-pick-label { color: #f4b740; }
+
+/* ---------- Before / after comparison ---------- */
+/* The frozen "before" copy sits above the live stage and is clipped back to
+   the split; the live stage itself is the "after". */
+.compare-layer {
+  position: absolute; inset: 0; z-index: 5;
+  pointer-events: none;
+}
+.compare-clone {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  aspect-ratio: auto;
+  border-radius: 0;
+  box-shadow: none;
+}
+.compare-clone * { animation: none !important; transition: none !important; }
+
+.compare-handle {
+  position: absolute; top: 0; bottom: 0; z-index: 7;
+  width: 40px; margin-left: -20px;
+  cursor: ew-resize; touch-action: none;
+  display: flex; align-items: center; justify-content: center;
+}
+/* The divider line itself, so the 40px hit area stays invisible. */
+.compare-handle::before {
+  content: ""; position: absolute; top: 0; bottom: 0; left: 50%;
+  width: 2px; margin-left: -1px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.7);
+}
+.compare-grip {
+  position: relative; z-index: 1;
+  width: 38px; height: 38px; border-radius: 50%;
+  background: rgba(10, 11, 14, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+  transition: transform 0.2s var(--ease), background-color 0.2s var(--ease);
+}
+/* Two chevrons pointing outwards: the universal "drag me" affordance. */
+.compare-grip::before, .compare-grip::after {
+  content: ""; position: absolute; top: 50%; width: 7px; height: 7px;
+  border-top: 2px solid rgba(255, 255, 255, 0.92);
+  border-right: 2px solid rgba(255, 255, 255, 0.92);
+}
+.compare-grip::before { left: 10px; transform: translateY(-50%) rotate(-135deg); }
+.compare-grip::after { right: 10px; transform: translateY(-50%) rotate(45deg); }
+
+.compare-handle:hover .compare-grip,
+.compare-handle.dragging .compare-grip { transform: scale(1.08); background: rgba(244, 183, 64, 0.28); }
+.compare-handle:focus { outline: none; }
+.compare-handle:focus-visible .compare-grip {
+  outline: 2px solid #f4b740; outline-offset: 3px;
+}
+
+.compare-tag {
+  position: absolute; bottom: 12px; z-index: 6;
+  padding: 4px 10px; border-radius: 999px;
+  background: rgba(8, 9, 12, 0.62); border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #cfd2d8;
+  pointer-events: none;
+  transition: opacity 0.2s var(--ease);
+}
+.compare-tag-before { left: 12px; }
+.compare-tag-after { right: 12px; }
+/* Near the edges one side is a sliver, so its label would sit on the wrong half. */
+.compare-at-edge .compare-tag { opacity: 0; }
+
+@media (max-width: 640px) {
+  .compare-grip { width: 34px; height: 34px; }
+  .compare-tag { bottom: 8px; font-size: 9px; }
+}
+
+/* While comparing, the Before/After tags stand in for the scene badge, and the
+   AF box must stay above the frozen copy so it still marks the live focus. */
+.comparing .stage-badge { opacity: 0; }
+.comparing .af-box { z-index: 8; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
