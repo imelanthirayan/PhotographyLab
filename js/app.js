@@ -4,7 +4,7 @@
 
   var ROUTES = [
     Labs.aperture, Labs.shutter, Labs.iso, Labs.whitebalance,
-    Labs.exposure, Labs.focus, Labs.triangle, Labs.focal
+    Labs.exposure, Labs.focus, Labs.triangle, Labs.focal, Labs.rawformats
   ];
 
   var main = document.getElementById('main');
@@ -91,7 +91,8 @@
   function sceneFor(id) {
     return {
       aperture: 'portrait', shutter: 'action', iso: 'night', wb: 'indoor',
-      exposure: 'landscape', focus: 'focus', triangle: 'street'
+      exposure: 'landscape', focus: 'focus', triangle: 'street',
+      'raw-jpg-heif': 'landscape'
     }[id] || 'landscape';
   }
 

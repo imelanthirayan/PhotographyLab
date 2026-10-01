@@ -47,6 +47,7 @@ bar.
 | 🟢 | **Focus** | Sharpness at different distances |
 | 🔺 | **Exposure Triangle** | Aperture, shutter speed, and ISO together |
 | 📷 | **Camera Simulator** | Framing, perspective, field of view, and blur |
+| 🖼️ | **RAW vs JPG vs HEIF** | Editing latitude, detail, compression, and file-size trade-offs |
 
 ---
 
